@@ -5,6 +5,7 @@ L3D cube;
 
 Ship player;
 List<Base> bases;
+List<Alien> aliens;
 
 void setup() {
   size(displayWidth, displayHeight, P3D);
@@ -14,6 +15,7 @@ void setup() {
   cube.enablePoseCube();
   
   layoutBases();
+  layoutAliens();
   
   player = new Ship(4, 4);
 }
@@ -37,51 +39,43 @@ void layoutBases() {
   }
 }
 
-void renderBases(L3D cube) {
-  for(Base b: bases) {
-    b.render(cube);
+void layoutAliens() {
+  aliens = new ArrayList<Alien>();
+  
+  int alienXZSpacing = 3;
+  int alienYSpacing = 2;
+  int alienXZMargin = 2;
+  int alienYMargin = 0;
+  int sizeDeadzone = 3; // empty space between aliens and cube bottom
+  
+  for(int z=alienXZMargin; z < 7; z += alienXZSpacing) {
+    for(int y=alienYMargin; y < 7 - sizeDeadzone; y += alienYSpacing) {
+      for(int x=alienXZMargin; x < 7; x += alienXZSpacing) {
+        aliens.add(new Alien(x, y, z));
+      }
+    }
   }
 }
 
-void draw() {
-  background(0);
-  cube.background(0);
+class Alien {
+  private int myColor;
   
-  renderBases(cube);
-  player.render(cube);
-}
-
-void keyPressed() {
-  if(key == CODED) {
-    switch(keyCode) {
-      case UP:
-        player.moveBack();
-        break;
-      case LEFT:
-        player.moveLeft();
-        break;
-      case DOWN:
-        player.moveForward();
-        break;
-      case RIGHT:
-        player.moveRight();
-        break;
-    }
-  } else {
-    switch(key) {
-      case 'w':
-        player.moveBack();
-        break;
-      case 'a':
-        player.moveLeft();
-        break;
-      case 's':
-        player.moveForward();
-        break;
-      case 'z':
-        player.moveRight();
-        break;
-    }
+  PVector pos;
+  boolean alive;
+  
+  public Alien(int _x, int _y, int _z) {
+    pos = new PVector(_x, _y, _z);
+    alive = true;
+    
+    myColor = color(255);
+  }
+  
+  public void render(L3D cube) {
+    if(alive) cube.setVoxel(pos, myColor);
+  }
+  
+  public void act() {
+    
   }
 }
 
@@ -173,3 +167,46 @@ class Base {
   }
 }
 
+void draw() {
+  background(0);
+  cube.background(0);
+  
+  for(Alien a: aliens) a.render(cube);
+  for(Base b: bases)   b.render(cube);
+  
+  player.render(cube);
+}
+
+void keyPressed() {
+  if(key == CODED) {
+    switch(keyCode) {
+      case UP:
+        player.moveBack();
+        break;
+      case LEFT:
+        player.moveLeft();
+        break;
+      case DOWN:
+        player.moveForward();
+        break;
+      case RIGHT:
+        player.moveRight();
+        break;
+    }
+  } else {
+    switch(key) {
+      case 'w':
+        player.moveBack();
+        break;
+      case 'a':
+        player.moveLeft();
+        break;
+      case 's':
+        player.moveForward();
+        break;
+      case 'z':
+        player.moveRight();
+        break;
+    }
+  }
+}
