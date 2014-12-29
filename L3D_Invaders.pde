@@ -11,6 +11,7 @@ L3D cube;
 Ship player;
 List<Base> bases;
 AlienSwarm swarm;
+List<Shot> shots;
 
 int time = 0;
 
@@ -25,8 +26,8 @@ void setup() {
   
   layoutBases();
   swarm = new AlienSwarm(3, 2, 3, 30);
-  
   player = new Ship(4, 4);
+  shots = new Vector<Shot>();
 }
 
 void layoutBases() {
@@ -45,6 +46,38 @@ void layoutBases() {
     for(int x=0; x < baseGridWidth; x++) {
       bases.add(new Base(x * originSpacing, y * originSpacing, baseWidth, baseHeight));
     }
+  }
+}
+
+abstract class Shot {
+  private PVector pos;
+  private int vy;
+  private boolean alive;
+  
+  private final static int SPEED = 1;
+  protected int myColor;
+  private int lastMoveTime;
+  
+  public Shot(int x, int y, int z, int _vy) {
+    pos = new PVector(x, y, z);
+    vy = _vy;
+    lastMoveTime = 0;
+    alive = true;
+  }
+  
+  public void update(int time) {
+    if(time - lastMoveTime > SPEED) {
+      pos.y += vy;
+      
+      if(pos.y < 0 || pos.y > 7)
+        alive = false;
+      
+      lastMoveTime = time;
+    }
+  }
+  
+  public void render(L3D cube) {
+    cube.setVoxel(pos, myColor);
   }
 }
 
@@ -177,17 +210,34 @@ class Alien {
   public void render(L3D cube) {
     if(alive) cube.setVoxel(pos, myColor);
   }
+  
+  class AlienShot extends Shot {
+    public AlienShot(int x, int y, int z) {
+      super(x, y, z, 1);
+      myColor = color(255, 255, 0);
+    }
+  }
 }
 
 class Ship {
   private final int COLOR = color(0, 0, 255);
   
-  int x, z;
-  final int y = 7;
+  private int x, z;
+  private final int y = 7;
+  private boolean shoot;
   
   public Ship(int _x, int _z) {
     x = _x;
     z = _z;
+    
+    shoot = false;
+  }
+  
+  public void update(int time) {
+    if(shoot) {
+      shots.add(new ShipShot(x, y-1, z));
+      shoot = false;
+    }
   }
   
   public void render(L3D cube) {
@@ -211,7 +261,14 @@ class Ship {
   }
   
   public void shoot() {
-    println("pow pow");
+    shoot = true;
+  }
+   
+  class ShipShot extends Shot {
+    public ShipShot(int x, int y, int z) {
+      super(x, y, z, -1);
+      myColor = color(255, 255, 0);
+    }
   }
 }
 
@@ -268,6 +325,8 @@ class Base {
 }
 
 void update() {
+  for(Shot s: shots) s.update(time);
+  player.update(time);
   swarm.update(time);
   time++;
 }
@@ -276,9 +335,18 @@ void render() {
   background(0);
   cube.background(0);
   
-  for(Base b: bases)   b.render(cube);
+  for(Base b: bases) b.render(cube);
   swarm.render(cube);
   player.render(cube);
+  for(Shot s: shots) s.render(cube);
+  
+  // bury the dead
+  Iterator<Shot> shotItr = shots.iterator();
+  while(shotItr.hasNext()) {
+    Shot s = shotItr.next();
+    if(!s.alive)
+      shotItr.remove();
+  }
 }
 
 void draw() {
@@ -315,6 +383,9 @@ void keyPressed() {
         break;
       case 'z':
         player.moveRight();
+        break;
+      case ' ':
+        player.shoot();
         break;
     }
   }
