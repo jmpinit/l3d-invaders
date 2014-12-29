@@ -1,21 +1,30 @@
 import L3D.*;
 import java.util.*;
 
+// Space Invaders for the L3D Cube
+// by Owen Trueblood
+// TODO Split classes into files
+// TODO PVectors for all positions
+
 L3D cube;
 
 Ship player;
 List<Base> bases;
-List<Alien> aliens;
+AlienSwarm swarm;
+
+int time = 0;
 
 void setup() {
-  size(displayWidth, displayHeight, P3D);
+  size(640, 480, P3D);
+  frameRate(30);
+  
   cube=new L3D(this);
   cube.enableDrawing();  //draw the virtual cube
   cube.enableMulticastStreaming();  //stream the data over UDP to any L3D cubes that are listening on the local network
   cube.enablePoseCube();
   
   layoutBases();
-  layoutAliens();
+  swarm = new AlienSwarm(3, 2, 3, 30);
   
   player = new Ship(4, 4);
 }
@@ -39,20 +48,105 @@ void layoutBases() {
   }
 }
 
-void layoutAliens() {
-  aliens = new ArrayList<Alien>();
+class AlienSwarm {
+  private List<Alien> aliens;
+  private int spacing, margin, sizeDeadzone;
   
-  int alienXZSpacing = 3;
-  int alienYSpacing = 2;
-  int alienXZMargin = 2;
-  int alienYMargin = 0;
-  int sizeDeadzone = 3; // empty space between aliens and cube bottom
+  PVector pos;
+  int xDir, yDir, zDir;
+  private int w, h, depth;
   
-  for(int z=alienXZMargin; z < 7; z += alienXZSpacing) {
-    for(int y=alienYMargin; y < 7 - sizeDeadzone; y += alienYSpacing) {
-      for(int x=alienXZMargin; x < 7; x += alienXZSpacing) {
-        aliens.add(new Alien(x, y, z));
+  private int initialSpeed;
+  private int lastMoveTime;
+  
+  public AlienSwarm(int _spacing, int margin, int sizeDeadzone, int speed) {
+    spacing = _spacing;
+    initialSpeed = speed;
+    
+    w = (ceil((8-margin) / spacing) - 1) * spacing + 1;
+    depth = w;
+    h = 7 - sizeDeadzone;
+    
+    pos = new PVector(margin, 0, margin);
+   
+    xDir = 1; yDir = 1; zDir = 1;
+   
+    aliens = new ArrayList<Alien>();
+    layoutAliens();
+  }
+  
+  public void layoutAliens() {
+    int alienXZSpacing = spacing;
+    int alienYSpacing = 2;
+    
+    int i = 0;
+    for(int z=int(pos.z); z < pos.z + depth; z += alienXZSpacing) {
+      for(int y=int(pos.y); y < pos.y + h; y += alienYSpacing) {
+        for(int x=int(pos.x); x < pos.x + w; x += alienXZSpacing) {
+          if(aliens.size() - 1 < i)
+            aliens.add(new Alien(x, y, z));
+          else
+            aliens.get(i).setPosition(x, y, z);
+            
+          i++;
+        }
       }
+    }
+  }
+  
+  public void render(L3D cube) {
+    for(Alien a: aliens)
+      a.render(cube);
+  }
+  
+  public void update(int time) {
+    int speed = int(initialSpeed - map(pos.y, 0, 7, 0, initialSpeed));
+    
+    if(time - lastMoveTime >= speed) {
+      boolean xCollide = false;
+      boolean zCollide = false;
+      
+      pos.x += xDir;
+      
+      if(pos.x + w > 8) {
+        pos.x = 8 - w;
+        xCollide = true;
+      }
+      
+      if(pos.x < 0) {
+        pos.x = 0;
+        xCollide = true;
+      }
+      
+      if(xCollide) {
+        xDir *= -1;
+        
+        pos.z += zDir;
+        
+        if(pos.z + depth > 8) {
+          pos.z = 8 - depth;
+          zCollide = true;
+        }
+        
+        if(pos.z < 0) {
+          pos.z = 0;
+          zCollide = true;
+        }
+        
+        if(zCollide) {
+          zDir *= -1;
+          
+          pos.y += yDir;
+          
+          if(pos.y + h > 7) {
+            // TODO lose
+          }
+        }
+      }
+      
+      layoutAliens();
+      
+      lastMoveTime = time;
     }
   }
 }
@@ -64,18 +158,24 @@ class Alien {
   boolean alive;
   
   public Alien(int _x, int _y, int _z) {
+    this(_x, _y, _z, 30);
+  }
+  
+  public Alien(int _x, int _y, int _z, int _speed) {
     pos = new PVector(_x, _y, _z);
     alive = true;
     
     myColor = color(255);
   }
   
-  public void render(L3D cube) {
-    if(alive) cube.setVoxel(pos, myColor);
+  public void setPosition(int x, int y, int z) {
+    pos.x = x;
+    pos.y = y;
+    pos.z = z;
   }
   
-  public void act() {
-    
+  public void render(L3D cube) {
+    if(alive) cube.setVoxel(pos, myColor);
   }
 }
 
@@ -167,14 +267,23 @@ class Base {
   }
 }
 
-void draw() {
+void update() {
+  swarm.update(time);
+  time++;
+}
+
+void render() {
   background(0);
   cube.background(0);
   
-  for(Alien a: aliens) a.render(cube);
   for(Base b: bases)   b.render(cube);
-  
+  swarm.render(cube);
   player.render(cube);
+}
+
+void draw() {
+  update();
+  render();
 }
 
 void keyPressed() {
