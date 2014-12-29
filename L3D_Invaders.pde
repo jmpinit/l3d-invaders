@@ -3,6 +3,7 @@ import java.util.*;
 
 L3D cube;
 
+Ship player;
 List<Base> bases;
 
 void setup() {
@@ -13,6 +14,8 @@ void setup() {
   cube.enablePoseCube();
   
   layoutBases();
+  
+  player = new Ship(4, 4);
 }
 
 void layoutBases() {
@@ -45,6 +48,77 @@ void draw() {
   cube.background(0);
   
   renderBases(cube);
+  player.render(cube);
+}
+
+void keyPressed() {
+  if(key == CODED) {
+    switch(keyCode) {
+      case UP:
+        player.moveBack();
+        break;
+      case LEFT:
+        player.moveLeft();
+        break;
+      case DOWN:
+        player.moveForward();
+        break;
+      case RIGHT:
+        player.moveRight();
+        break;
+    }
+  } else {
+    switch(key) {
+      case 'w':
+        player.moveBack();
+        break;
+      case 'a':
+        player.moveLeft();
+        break;
+      case 's':
+        player.moveForward();
+        break;
+      case 'z':
+        player.moveRight();
+        break;
+    }
+  }
+}
+
+class Ship {
+  private final int COLOR = color(0, 0, 255);
+  
+  int x, z;
+  final int y = 7;
+  
+  public Ship(int _x, int _z) {
+    x = _x;
+    z = _z;
+  }
+  
+  public void render(L3D cube) {
+    cube.setVoxel(new PVector(x, y, z), COLOR);
+  }
+  
+  public void moveLeft() {
+    if(x > 0) x--;
+  }
+  
+  public void moveRight() {
+    if(x < 7) x++;
+  }
+  
+  public void moveBack() {
+    if(z < 7) z++;
+  }
+  
+  public void moveForward() {
+    if(z > 0) z--;
+  }
+  
+  public void shoot() {
+    println("pow pow");
+  }
 }
 
 class Base {
