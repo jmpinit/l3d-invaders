@@ -1,4 +1,5 @@
 import processing.core.*;
+import java.util.*;
 import L3D.*;
 import java.awt.Color;
 
@@ -11,27 +12,27 @@ public class Base {
   
   private int[][] health;
   private PVector pos;
-  private int w, h;
+  private int width, depth;
   
   public Base(int _x, int _y) {
     this(_x, _y, 2, 2);
   }
   
-  public Base(int x, int z, int _width, int _height) {
+  public Base(int x, int z, int _width, int _depth) {
     pos = new PVector(x, 7-distanceFromBottom, z);
-    w = _width;
-    h = _height;
+    width = _width;
+    depth = _depth;
     
-    health = new int[w][h];
+    health = new int[width][depth];
     
-    for(int offZ=0; offZ < h; offZ++)
-      for(int offX=0; offX < w; offX++)
+    for(int offZ=0; offZ < depth; offZ++)
+      for(int offX=0; offX < width; offX++)
         health[offX][offZ] = 2;
   }
   
   public void render(L3D cube) {
-    for(int offZ=0; offZ < h; offZ++) {
-      for(int offX=0; offX < w; offX++) {
+    for(int offZ=0; offZ < depth; offZ++) {
+      for(int offX=0; offX < width; offX++) {
         int healthColor = healthToColor(health[offX][offZ]);
         
         int drawX = (int)(pos.x + offX);
@@ -39,6 +40,23 @@ public class Base {
         int drawZ = (int)(pos.z + offZ);
         
         cube.setVoxel(new PVector(drawX, drawY, drawZ), healthColor);
+      }
+    }
+  }
+  
+  public void update(int time, List<Shot> shots) {
+    for(Shot s: shots) {
+      for(int z=0; z < depth; z++) {
+        for(int x=0; x < width; x++) {
+          if((int)(pos.x + x) == s.getX()
+           && (int)(pos.y) == s.getY()
+           && (int)(pos.z + z) == s.getZ()) {
+            if(health[x][z] > 0) {
+              health[x][z]--;
+              s.kill();
+            }
+          }
+        }
       }
     }
   }

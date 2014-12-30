@@ -59,6 +59,7 @@ void update() {
     for(Shot s: shots) s.update(time);
     player.update(time, shots);
     swarm.update(time, shots);
+    for(Base b: bases) b.update(time, shots);
     
     // bury the dead
     Iterator<Shot> shotItr = shots.iterator();
