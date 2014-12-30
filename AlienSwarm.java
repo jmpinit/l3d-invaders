@@ -176,6 +176,7 @@ class Alien {
   private boolean alive;
   
   private AudioPlayer sfxShoot;
+  private AudioPlayer sfxDie;
   
   private Random rand;
   
@@ -190,6 +191,7 @@ class Alien {
     rand = new Random();
     
     sfxShoot = minim.loadFile("alien-shoot.wav");
+    sfxDie = minim.loadFile("alien-death.wav");
     
     myColor = (new Color(255, 255, 255)).getRGB();
   }
@@ -206,6 +208,8 @@ class Alien {
         if((int)pos.x == s.getX() && (int)pos.y == s.getY() && (int)pos.z == s.getZ()) {
           alive = false;
           s.kill();
+          sfxDie.rewind();
+          sfxDie.play();
         }
       }
     }
