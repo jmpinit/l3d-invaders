@@ -16,12 +16,21 @@ public class AlienSwarm {
   private int lastMoveTime;
   
   private Minim minim;
+  private AudioPlayer music[];
+  private int musicIndex = 0;
   
   public AlienSwarm(Minim _minim, int _spacing, int margin, int sizeDeadzone, int speed) {
     spacing = _spacing;
     initialSpeed = speed;
     
     minim = _minim;
+    
+    music = new AudioPlayer[4];
+    music[0] = minim.loadFile("music-1.mp3");
+    music[1] = minim.loadFile("music-2.mp3");
+    music[2] = minim.loadFile("music-3.mp3");
+    music[3] = minim.loadFile("music-4.mp3");
+    musicIndex = 0;
     
     w = (int)(Math.ceil((8-margin) / spacing) - 1) * spacing + 1;
     depth = w;
@@ -125,6 +134,11 @@ public class AlienSwarm {
       }
       
       moveAliens();
+      
+      music[musicIndex].rewind();
+      music[musicIndex].play();
+      musicIndex++;
+      musicIndex = musicIndex % music.length;
       
       lastMoveTime = time;
     }
