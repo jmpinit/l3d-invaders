@@ -10,6 +10,8 @@ public class Ship {
   private boolean shoot;
   private boolean alive;
   
+  private Shot myShot;
+  
   public Ship(int x, int z) {
     pos = new PVector(x, 7, z);
     
@@ -27,10 +29,14 @@ public class Ship {
       }
     }
     
-    if(shoot) {
-      shots.add(new ShipShot((int)pos.x, (int)(pos.y-1), (int)pos.z));
+    if(shoot && myShot == null) {
+      myShot = new ShipShot((int)pos.x, (int)(pos.y-1), (int)pos.z);
+      shots.add(myShot);
       shoot = false;
     }
+    
+    if(myShot != null && !myShot.isAlive())
+      myShot = null;
   }
   
   public void render(L3D cube) {
