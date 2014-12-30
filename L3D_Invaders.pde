@@ -79,10 +79,24 @@ abstract class Shot {
   public void render(L3D cube) {
     cube.setVoxel(pos, myColor);
   }
+  
+  public int getX() { return int(pos.x); }
+  public int getY() { return int(pos.y); }
+  public int getZ() { return int(pos.z); }
 }
 
+class Pair<X, Y> { 
+  public final X x;
+  public final Y y;
+  
+  public Pair(X x, Y y) { 
+    this.x = x; 
+    this.y = y; 
+  } 
+} 
+
 class AlienSwarm {
-  private List<Alien> aliens;
+  private List<Pair<Alien, PVector>> aliensAndOffsets;
   private int spacing, margin, sizeDeadzone;
   
   PVector pos;
@@ -103,8 +117,8 @@ class AlienSwarm {
     pos = new PVector(margin, 0, margin);
    
     xDir = 1; yDir = 1; zDir = 1;
-   
-    aliens = new ArrayList<Alien>();
+    
+    aliensAndOffsets = new ArrayList<Pair<Alien, PVector>>();
     layoutAliens();
   }
   
@@ -113,23 +127,43 @@ class AlienSwarm {
     int alienYSpacing = 2;
     
     int i = 0;
-    for(int z=int(pos.z); z < pos.z + depth; z += alienXZSpacing) {
-      for(int y=int(pos.y); y < pos.y + h; y += alienYSpacing) {
-        for(int x=int(pos.x); x < pos.x + w; x += alienXZSpacing) {
-          if(aliens.size() - 1 < i)
-            aliens.add(new Alien(x, y, z));
-          else
-            aliens.get(i).setPosition(x, y, z);
+    for(int z=0; z < depth; z += alienXZSpacing) {
+      for(int y=0; y < h; y += alienYSpacing) {
+        for(int x=0; x < w; x += alienXZSpacing) {
+          if(aliensAndOffsets.size() - 1 < i) {
+            Alien a = new Alien(x + int(pos.x), y + int(pos.y), z + int(pos.z));
+            PVector offset = new PVector(x, y, z);
+            aliensAndOffsets.add(new Pair<Alien, PVector>(a, offset));
+          } else {
+            Pair p = aliensAndOffsets.get(i);
+            Alien a = (Alien)p.x;
+            PVector offset = (PVector)p.y;
             
+            offset.set(x, y, z);
+          }
+          
           i++;
         }
       }
     }
+    
+    moveAliens();
+  }
+  
+  public void moveAliens() {
+    for(Pair p: aliensAndOffsets) {
+      Alien a = (Alien)p.x;
+      PVector offset = (PVector)p.y;
+      
+      a.setPosition(int(pos.x + offset.x), int(pos.y + offset.y), int(pos.z + offset.z));
+    }
   }
   
   public void render(L3D cube) {
-    for(Alien a: aliens)
+    for(Pair p: aliensAndOffsets) {
+      Alien a = (Alien)p.x;
       a.render(cube);
+    }
   }
   
   public void update(int time) {
@@ -177,9 +211,22 @@ class AlienSwarm {
         }
       }
       
-      layoutAliens();
+      moveAliens();
       
       lastMoveTime = time;
+    }
+    
+    for(Pair p: aliensAndOffsets) {
+      Alien a = (Alien)p.x;
+      a.update(time);
+    }
+    
+    // bury the dead
+    Iterator<Pair<Alien, PVector>> pairItr = aliensAndOffsets.iterator();
+    while(pairItr.hasNext()) {
+      Alien a = pairItr.next().x;
+      if(!a.alive)
+        pairItr.remove();
     }
   }
 }
@@ -207,8 +254,19 @@ class Alien {
     pos.z = z;
   }
   
+  public void update(int time) {
+    for(Shot s: shots) {
+      if(s instanceof Ship.ShipShot) {
+        if(int(pos.x) == s.getX() && int(pos.y) == s.getY() && int(pos.z) == s.getZ()) {
+          alive = false;
+          s.alive = false;
+        }
+      }
+    }
+  }
+  
   public void render(L3D cube) {
-    if(alive) cube.setVoxel(pos, myColor);
+    cube.setVoxel(pos, myColor);
   }
   
   class AlienShot extends Shot {
