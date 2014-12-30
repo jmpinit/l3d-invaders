@@ -4,7 +4,6 @@ import ddf.minim.*;
 
 // Space Invaders for the L3D Cube
 // by Owen Trueblood
-// TODO PVectors for all positions
 
 L3D cube;
 
