@@ -133,17 +133,22 @@ public class AlienSwarm {
     Iterator<Pair<Alien, PVector>> pairItr = aliensAndOffsets.iterator();
     while(pairItr.hasNext()) {
       Alien a = pairItr.next().x;
-      if(!a.alive)
+      if(!a.isAlive())
         pairItr.remove();
     }
   }
 }
 
 class Alien {
-  private int myColor;
+  private static final float SHOOT_LIKELIHOOD = 0.005f;
   
-  PVector pos;
-  boolean alive;
+  private int myColor;
+  private Shot myShot;
+  
+  private PVector pos;
+  private boolean alive;
+  
+  private Random rand;
   
   public Alien(int _x, int _y, int _z) {
     this(_x, _y, _z, 30);
@@ -152,6 +157,8 @@ class Alien {
   public Alien(int _x, int _y, int _z, int _speed) {
     pos = new PVector(_x, _y, _z);
     alive = true;
+    
+    rand = new Random();
     
     myColor = (new Color(255, 255, 255)).getRGB();
   }
@@ -171,16 +178,30 @@ class Alien {
         }
       }
     }
+    
+    if(alive) {
+      if(rand.nextFloat() < SHOOT_LIKELIHOOD && myShot == null) {
+        myShot = new AlienShot((int)pos.x, (int)(pos.y+1), (int)pos.z);
+        shots.add(myShot);
+      }
+    }
+    
+    if(myShot != null && !myShot.isAlive())
+      myShot = null;
   }
   
   public void render(L3D cube) {
     cube.setVoxel(pos, myColor);
   }
   
+  public boolean isAlive() {
+    return alive;
+  }
+  
   class AlienShot extends Shot {
     public AlienShot(int x, int y, int z) {
       super(x, y, z, 1);
-      myColor = (new Color(255, 255, 0)).getRGB();
+      myColor = (new Color(255, 0, 0)).getRGB();
     }
   }
 }
