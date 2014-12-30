@@ -1,11 +1,14 @@
 import L3D.*;
 import java.util.*;
+import ddf.minim.*;
 
 // Space Invaders for the L3D Cube
 // by Owen Trueblood
 // TODO PVectors for all positions
 
 L3D cube;
+
+Minim minim;
 
 Ship player;
 List<Base> bases;
@@ -29,9 +32,11 @@ void setup() {
   cube.enableMulticastStreaming();  //stream the data over UDP to any L3D cubes that are listening on the local network
   cube.enablePoseCube();
   
+  minim = new Minim(this);
+  
   layoutBases();
-  swarm = new AlienSwarm(3, 2, 3, 30);
-  player = new Ship(4, 4);
+  swarm = new AlienSwarm(minim, 3, 2, 3, 30);
+  player = new Ship(minim, 4, 4);
   shots = new Vector<Shot>();
 }
 

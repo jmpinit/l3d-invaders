@@ -2,6 +2,7 @@ import processing.core.*;
 import java.util.*;
 import java.awt.Color;
 import L3D.*;
+import ddf.minim.*;
 
 public class AlienSwarm {
   private List<Pair<Alien, PVector>> aliensAndOffsets;
@@ -14,9 +15,13 @@ public class AlienSwarm {
   private int initialSpeed;
   private int lastMoveTime;
   
-  public AlienSwarm(int _spacing, int margin, int sizeDeadzone, int speed) {
+  private Minim minim;
+  
+  public AlienSwarm(Minim _minim, int _spacing, int margin, int sizeDeadzone, int speed) {
     spacing = _spacing;
     initialSpeed = speed;
+    
+    minim = _minim;
     
     w = (int)(Math.ceil((8-margin) / spacing) - 1) * spacing + 1;
     depth = w;
@@ -39,7 +44,7 @@ public class AlienSwarm {
       for(int y=0; y < h; y += alienYSpacing) {
         for(int x=0; x < w; x += alienXZSpacing) {
           if(aliensAndOffsets.size() - 1 < i) {
-            Alien a = new Alien(x + (int)pos.x, y + (int)pos.y, z + (int)pos.z);
+            Alien a = new Alien(minim, x + (int)pos.x, y + (int)pos.y, z + (int)pos.z);
             PVector offset = new PVector(x, y, z);
             aliensAndOffsets.add(new Pair<Alien, PVector>(a, offset));
           } else {
@@ -156,17 +161,21 @@ class Alien {
   private PVector pos;
   private boolean alive;
   
+  private AudioPlayer sfxShoot;
+  
   private Random rand;
   
-  public Alien(int _x, int _y, int _z) {
-    this(_x, _y, _z, 30);
+  public Alien(Minim minim, int _x, int _y, int _z) {
+    this(minim, _x, _y, _z, 30);
   }
   
-  public Alien(int _x, int _y, int _z, int _speed) {
+  public Alien(Minim minim, int _x, int _y, int _z, int _speed) {
     pos = new PVector(_x, _y, _z);
     alive = true;
     
     rand = new Random();
+    
+    sfxShoot = minim.loadFile("alien-shoot.wav");
     
     myColor = (new Color(255, 255, 255)).getRGB();
   }
@@ -191,6 +200,8 @@ class Alien {
       if(rand.nextFloat() < SHOOT_LIKELIHOOD && myShot == null) {
         myShot = new AlienShot((int)pos.x, (int)(pos.y+1), (int)pos.z);
         shots.add(myShot);
+        sfxShoot.rewind();
+        sfxShoot.play();
       }
     }
     
