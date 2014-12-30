@@ -12,7 +12,13 @@ List<Base> bases;
 AlienSwarm swarm;
 List<Shot> shots;
 
+boolean playing = true;
+boolean winner;
+
+float animSpeed = 0.3; // length of win/lose animation
+
 int time = 0;
+int endTime;
 
 void setup() {
   size(640, 480, P3D);
@@ -49,9 +55,29 @@ void layoutBases() {
 }
 
 void update() {
-  for(Shot s: shots) s.update(time);
-  player.update(time, shots);
-  swarm.update(time, shots);
+  if(playing) {
+    for(Shot s: shots) s.update(time);
+    player.update(time, shots);
+    swarm.update(time, shots);
+    
+    // bury the dead
+    Iterator<Shot> shotItr = shots.iterator();
+    while(shotItr.hasNext()) {
+      Shot s = shotItr.next();
+      if(!s.isAlive())
+        shotItr.remove();
+    }
+    
+    // gameover?
+    if(!player.isAlive()) {
+      lose();
+    } else if(swarm.reachedGoal()) {
+      lose();
+    } else if(!swarm.isAlive()) {
+      win();
+    }
+  }
+  
   time++;
 }
 
@@ -59,18 +85,48 @@ void render() {
   background(0);
   cube.background(0);
   
-  for(Base b: bases) b.render(cube);
-  swarm.render(cube);
-  player.render(cube);
-  for(Shot s: shots) s.render(cube);
-  
-  // bury the dead
-  Iterator<Shot> shotItr = shots.iterator();
-  while(shotItr.hasNext()) {
-    Shot s = shotItr.next();
-    if(!s.isAlive())
-      shotItr.remove();
+  if(playing) {
+    for(Base b: bases) b.render(cube);
+    swarm.render(cube);
+    player.render(cube);
+    for(Shot s: shots) s.render(cube);
+  } else {
+    int timeSinceEnd = int(animSpeed * (time - endTime));
+    
+    if(winner) {
+      int pos = 7 - min(7, timeSinceEnd);
+      
+      for(int y=7; y >= pos; y--) {
+        for(int z=0; z < 8; z++) {
+          for(int x=0; x < 8; x++) {
+            cube.setVoxel(new PVector(x, y, z), color(0, 255, 0));
+          }
+        }
+      }
+    } else {
+      int pos = int(min(7, timeSinceEnd));
+      
+      for(int y=0; y < pos; y++) {
+        for(int z=0; z < 8; z++) {
+          for(int x=0; x < 8; x++) {
+            cube.setVoxel(new PVector(x, y, z), color(255, 0, 0));
+          }
+        }
+      }
+    }
   }
+}
+
+void win() {
+  playing = false;
+  winner = true;
+  endTime = time;
+}
+
+void lose() {
+  playing = false;
+  winner = false;
+  endTime = time;
 }
 
 void draw() {
@@ -79,38 +135,40 @@ void draw() {
 }
 
 void keyPressed() {
-  if(key == CODED) {
-    switch(keyCode) {
-      case UP:
-        player.moveBack();
-        break;
-      case LEFT:
-        player.moveLeft();
-        break;
-      case DOWN:
-        player.moveForward();
-        break;
-      case RIGHT:
-        player.moveRight();
-        break;
-    }
-  } else {
-    switch(key) {
-      case 'w':
-        player.moveBack();
-        break;
-      case 'a':
-        player.moveLeft();
-        break;
-      case 's':
-        player.moveForward();
-        break;
-      case 'z':
-        player.moveRight();
-        break;
-      case ' ':
-        player.shoot();
-        break;
+  if(playing) {
+    if(key == CODED) {
+      switch(keyCode) {
+        case UP:
+          player.moveBack();
+          break;
+        case LEFT:
+          player.moveLeft();
+          break;
+        case DOWN:
+          player.moveForward();
+          break;
+        case RIGHT:
+          player.moveRight();
+          break;
+      }
+    } else {
+      switch(key) {
+        case 'w':
+          player.moveBack();
+          break;
+        case 'a':
+          player.moveLeft();
+          break;
+        case 's':
+          player.moveForward();
+          break;
+        case 'z':
+          player.moveRight();
+          break;
+        case ' ':
+          player.shoot();
+          break;
+      }
     }
   }
 }

@@ -137,6 +137,14 @@ public class AlienSwarm {
         pairItr.remove();
     }
   }
+  
+  public boolean reachedGoal() {
+    return pos.y + h > 7;
+  }
+  
+  public boolean isAlive() {
+    return aliensAndOffsets.size() > 0;
+  }
 }
 
 class Alien {
