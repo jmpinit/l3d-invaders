@@ -6,42 +6,40 @@ import java.awt.Color;
 public class Ship {
   private final int COLOR = (new Color(0, 0, 255)).getRGB();
   
-  private int x, z;
-  private final int y = 7;
+  private PVector pos;
   private boolean shoot;
   
-  public Ship(int _x, int _z) {
-    x = _x;
-    z = _z;
+  public Ship(int x, int z) {
+    pos = new PVector(x, 7, z);
     
     shoot = false;
   }
   
   public void update(int time, List<Shot> shots) {
     if(shoot) {
-      shots.add(new ShipShot(x, y-1, z));
+      shots.add(new ShipShot((int)pos.x, (int)(pos.y-1), (int)pos.z));
       shoot = false;
     }
   }
   
   public void render(L3D cube) {
-    cube.setVoxel(new PVector(x, y, z), COLOR);
+    cube.setVoxel(pos, COLOR);
   }
   
   public void moveLeft() {
-    if(x > 0) x--;
+    if(pos.x > 0) pos.x--;
   }
   
   public void moveRight() {
-    if(x < 7) x++;
+    if(pos.x < 7) pos.x++;
   }
   
   public void moveBack() {
-    if(z < 7) z++;
+    if(pos.z < 7) pos.z++;
   }
   
   public void moveForward() {
-    if(z > 0) z--;
+    if(pos.z > 0) pos.z--;
   }
   
   public void shoot() {
