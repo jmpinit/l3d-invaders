@@ -10,7 +10,7 @@ L3D cube;
 
 Minim minim;
 
-AudioPlayer sfxExplosion;
+AudioPlayer sfxExplosion, sfxWin;
 
 Ship player;
 List<Base> bases;
@@ -37,6 +37,7 @@ void setup() {
   minim = new Minim(this);
   
   sfxExplosion = minim.loadFile("explosion.wav");
+  sfxWin = minim.loadFile("win.wav");
   
   layoutBases();
   swarm = new AlienSwarm(minim, 3, 2, 3, 30);
@@ -131,6 +132,9 @@ void win() {
   playing = false;
   winner = true;
   endTime = time;
+  
+  sfxWin.rewind();
+  sfxWin.play();
 }
 
 void lose() {
