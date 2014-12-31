@@ -38,7 +38,7 @@ public class AlienSwarm {
     
     pos = new PVector(margin, 0, margin);
    
-    xDir = 1; yDir = 1; zDir = 1;
+    xDir = 1; yDir = -1; zDir = 1;
     
     aliensAndOffsets = new ArrayList<Pair<Alien, PVector>>();
     layoutAliens();
@@ -53,8 +53,8 @@ public class AlienSwarm {
       for(int y=0; y < h; y += alienYSpacing) {
         for(int x=0; x < w; x += alienXZSpacing) {
           if(aliensAndOffsets.size() - 1 < i) {
-            Alien a = new Alien(minim, x + (int)pos.x, y + (int)pos.y, z + (int)pos.z);
-            PVector offset = new PVector(x, y, z);
+            Alien a = new Alien(minim, x + (int)pos.x, (7-y) + (int)pos.y, z + (int)pos.z);
+            PVector offset = new PVector(x, (7-y), z);
             aliensAndOffsets.add(new Pair<Alien, PVector>(a, offset));
           } else {
             Pair p = aliensAndOffsets.get(i);
@@ -126,10 +126,6 @@ public class AlienSwarm {
           zDir *= -1;
           
           pos.y += yDir;
-          
-          if(pos.y + h > 7) {
-            // TODO lose
-          }
         }
       }
       
@@ -216,7 +212,7 @@ class Alien {
     
     if(alive) {
       if(rand.nextFloat() < SHOOT_LIKELIHOOD && myShot == null) {
-        myShot = new AlienShot((int)pos.x, (int)(pos.y+1), (int)pos.z);
+        myShot = new AlienShot((int)pos.x, (int)(pos.y-1), (int)pos.z);
         shots.add(myShot);
         sfxShoot.rewind();
         sfxShoot.play();
@@ -237,7 +233,7 @@ class Alien {
   
   class AlienShot extends Shot {
     public AlienShot(int x, int y, int z) {
-      super(x, y, z, 1);
+      super(x, y, z, -1);
       myColor = (new Color(255, 0, 0)).getRGB();
     }
   }

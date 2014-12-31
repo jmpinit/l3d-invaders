@@ -19,7 +19,7 @@ public class Base {
   }
   
   public Base(int x, int z, int _width, int _depth) {
-    pos = new PVector(x, 7-distanceFromBottom, z);
+    pos = new PVector(x, distanceFromBottom, z);
     width = _width;
     depth = _depth;
     

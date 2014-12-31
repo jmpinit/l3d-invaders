@@ -16,7 +16,7 @@ public class Ship {
   private AudioPlayer sfxShoot;
   
   public Ship(Minim minim, int x, int z) {
-    pos = new PVector(x, 7, z);
+    pos = new PVector(x, 0, z);
     
     alive = true;
     shoot = false;
@@ -35,7 +35,7 @@ public class Ship {
     }
     
     if(shoot && myShot == null) {
-      myShot = new ShipShot((int)pos.x, (int)(pos.y-1), (int)pos.z);
+      myShot = new ShipShot((int)pos.x, (int)(pos.y+1), (int)pos.z);
       shots.add(myShot);
       sfxShoot.rewind();
       sfxShoot.play();
@@ -81,7 +81,7 @@ public class Ship {
    
   class ShipShot extends Shot {
     public ShipShot(int x, int y, int z) {
-      super(x, y, z, -1);
+      super(x, y, z, 1);
       myColor = (new Color(255, 255, 0)).getRGB();
     }
   }

@@ -103,23 +103,23 @@ void render() {
   } else {
     int timeSinceEnd = int(animSpeed * (time - endTime));
     
-    if(winner) {
+    if(!winner) {
       int pos = 7 - min(7, timeSinceEnd);
       
       for(int y=7; y >= pos; y--) {
         for(int z=0; z < 8; z++) {
           for(int x=0; x < 8; x++) {
-            cube.setVoxel(new PVector(x, y, z), color(0, 255, 0));
+            cube.setVoxel(new PVector(x, y, z), color(255, 0, 0));
           }
         }
       }
     } else {
-      int pos = int(min(7, timeSinceEnd));
+      int pos = int(min(8, timeSinceEnd));
       
       for(int y=0; y < pos; y++) {
         for(int z=0; z < 8; z++) {
           for(int x=0; x < 8; x++) {
-            cube.setVoxel(new PVector(x, y, z), color(255, 0, 0));
+            cube.setVoxel(new PVector(x, y, z), color(0, 255, 0));
           }
         }
       }
@@ -155,13 +155,13 @@ void keyPressed() {
     if(key == CODED) {
       switch(keyCode) {
         case UP:
-          player.moveBack();
+          player.moveForward();
           break;
         case LEFT:
           player.moveLeft();
           break;
         case DOWN:
-          player.moveForward();
+          player.moveBack();
           break;
         case RIGHT:
           player.moveRight();
@@ -170,13 +170,13 @@ void keyPressed() {
     } else {
       switch(key) {
         case 'w':
-          player.moveBack();
+          player.moveForward();
           break;
         case 'a':
           player.moveLeft();
           break;
         case 's':
-          player.moveForward();
+          player.moveBack();
           break;
         case 'z':
           player.moveRight();
