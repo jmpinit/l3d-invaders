@@ -17,6 +17,7 @@ public class Ship {
   private Shot myShot;
   
   private AudioPlayer sfxShoot;
+  private AudioPlayer sfxHurt;
   private boolean flash;
   
   public Ship(Minim minim, int x, int z, int _bound) {
@@ -29,6 +30,7 @@ public class Ship {
     shoot = false;
     
     sfxShoot = minim.loadFile("ship-shoot.wav");
+    sfxHurt = minim.loadFile("ship-hurt.wav");
   }
   
   public void update(int time, List<Shot> shots) {
@@ -38,6 +40,8 @@ public class Ship {
           if(lives > 0) {
             lives--;
             flash = true;
+            sfxHurt.rewind();
+            sfxHurt.play();
           } else {
             alive = false;
           }
