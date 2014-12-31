@@ -17,6 +17,7 @@ AudioPlayer sfxExplosion, sfxWin;
 Ship player;
 List<Base> bases;
 AlienSwarm swarm;
+UFO ufo;
 List<Shot> shots;
 
 boolean playing = true;
@@ -47,6 +48,7 @@ void setup() {
   layoutBases();
   swarm = new AlienSwarm(minim, 3, 2, max(3, cube.side/2), 30, cube.side);
   player = new Ship(minim, 4, 4, cube.side);
+  ufo = new UFO(minim, 0, 2, UFO.HORIZONTAL, cube.side);
   shots = new Vector<Shot>();
   
   // set sensible almost-top-down camera angle
@@ -77,6 +79,7 @@ void update() {
     for(Shot s: shots) s.update(time);
     player.update(time, shots);
     swarm.update(time, shots);
+    if(ufo != null) ufo.update(time, shots);
     for(Base b: bases) b.update(time, shots);
     
     // bury the dead
@@ -86,6 +89,9 @@ void update() {
       if(!s.isAlive())
         shotItr.remove();
     }
+    
+    if(ufo != null && !ufo.isAlive())
+      ufo = null;
     
     // gameover?
     if(!player.isAlive()) {
@@ -108,6 +114,7 @@ void render() {
   if(playing) {
     for(Base b: bases) b.render(cube);
     swarm.render(cube);
+    if(ufo != null) ufo.render(cube);
     player.render(cube);
     for(Shot s: shots) s.render(cube);
   } else {
