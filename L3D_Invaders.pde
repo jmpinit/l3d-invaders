@@ -28,7 +28,7 @@ void setup() {
   size(displayWidth, displayHeight, P3D);
   frameRate(30);
   
-  cube = new L3D(this, 16);
+  cube = new L3D(this);
   cube.enableDrawing();  //draw the virtual cube
   cube.enableMulticastStreaming();  //stream the data over UDP to any L3D cubes that are listening on the local network
   cube.enablePoseCube();

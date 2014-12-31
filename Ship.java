@@ -5,17 +5,19 @@ import ddf.minim.*;
 import java.awt.Color;
 
 public class Ship {
-  private final int COLOR = (new Color(0, 0, 255)).getRGB();
+  private final static int MAX_LIVES = 3;
   
   private PVector pos;
   private boolean shoot;
   private boolean alive;
+  private int lives;
   
   private int bound;
   
   private Shot myShot;
   
   private AudioPlayer sfxShoot;
+  private boolean flash;
   
   public Ship(Minim minim, int x, int z, int _bound) {
     pos = new PVector(x, 0, z);
@@ -23,6 +25,7 @@ public class Ship {
     bound = _bound;
     
     alive = true;
+    lives = MAX_LIVES;
     shoot = false;
     
     sfxShoot = minim.loadFile("ship-shoot.wav");
@@ -32,7 +35,12 @@ public class Ship {
     for(Shot s: shots) {
       if(s instanceof Alien.AlienShot) {
         if((int)pos.x == s.getX() && (int)pos.y == s.getY() && (int)pos.z == s.getZ()) {
-          alive = false;
+          if(lives > 0) {
+            lives--;
+            flash = true;
+          } else {
+            alive = false;
+          }
           s.kill();
         }
       }
@@ -51,7 +59,23 @@ public class Ship {
   }
   
   public void render(L3D cube) {
-    cube.setVoxel(pos, COLOR);
+    if(flash) {
+      PVector fpos = new PVector();
+      int fcolor = (new Color(255, 255, 255)).getRGB();
+      
+      for(int z=0; z < bound; z++) {
+        for(int y=0; y < bound; y++) {
+          for(int x=0; x < bound; x++) {
+            fpos.set(x, y, z);
+            cube.setVoxel(fpos, fcolor);
+          }
+        }
+      }
+      
+      flash = false;
+    } else {
+      cube.setVoxel(pos, (new Color(0, 0, (int)(255 * (float)(lives + 1)/(MAX_LIVES + 1)))).getRGB());
+    }
   }
   
   public boolean isAlive() {
