@@ -5,10 +5,13 @@ import ddf.minim.*;
 // Space Invaders for the L3D Cube
 // by Owen Trueblood
 
+final int FRAME_RATE = 30;
+
 L3D cube;
 
 Minim minim;
 
+TextLayer text;
 AudioPlayer sfxExplosion, sfxWin;
 
 Ship player;
@@ -26,12 +29,15 @@ int endTime;
 
 void setup() {
   size(displayWidth, displayHeight, P3D);
-  frameRate(30);
+  frameRate(FRAME_RATE);
   
   cube = new L3D(this);
   cube.enableDrawing();  //draw the virtual cube
   cube.enableMulticastStreaming();  //stream the data over UDP to any L3D cubes that are listening on the local network
   cube.enablePoseCube();
+  
+  PFont font = createFont("zx_spectrum-7_bold.ttf", cube.side * 3 - 2);
+  text = new TextLayer(font, cube.side);
   
   minim = new Minim(this);
   
@@ -124,6 +130,12 @@ void render() {
         }
       }
     }
+    
+    if(!playing) {
+      // display score
+      String score = "" + swarm.deadCount() + " ";
+      text.put(cube, score.charAt(time / FRAME_RATE % score.length()), cube.side-1);
+    }
   }
 }
 
@@ -184,6 +196,42 @@ void keyPressed() {
         case ' ':
           player.shoot();
           break;
+      }
+    }
+  }
+}
+
+class TextLayer {
+  private PFont font;
+  private PGraphics graphics;
+  private int size;
+  
+  public TextLayer(PFont _font, int _size) {
+    font = _font;
+    size = _size;
+    graphics = createGraphics(size, size, JAVA2D);
+  }
+  
+  public void put(L3D cube, char c, int depth) {
+    graphics.beginDraw();
+    graphics.background(0);
+    graphics.fill(255);
+    graphics.textFont(font);
+    graphics.text("" + c, -2, size-1);
+    graphics.endDraw();
+    
+    graphics.loadPixels();
+    
+    PVector pos = new PVector();
+    for(int y=0; y < size; y++) {
+      for(int x=0; x < size; x++) {
+        pos.set(x, (size-1) - y, depth);
+        int col = graphics.pixels[y*size + x];
+        
+        // threshold
+        if(true) {
+          cube.setVoxel(pos, col);
+        }
       }
     }
   }

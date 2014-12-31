@@ -14,6 +14,7 @@ public class AlienSwarm {
   private int w, h, depth;
   private int bound;
   
+  private int initialPopulation;
   private int initialSpeed;
   private int lastMoveTime;
   
@@ -45,6 +46,8 @@ public class AlienSwarm {
     
     aliensAndOffsets = new ArrayList<Pair<Alien, PVector>>();
     layoutAliens();
+    
+    initialPopulation = aliensAndOffsets.size();
     
     float shootLikelihood = SHOOT_LIKELIHOOD * 1.0f / aliensAndOffsets.size();
     for(Pair p: aliensAndOffsets) {
@@ -168,6 +171,10 @@ public class AlienSwarm {
   
   public boolean isAlive() {
     return aliensAndOffsets.size() > 0;
+  }
+  
+  public int deadCount() {
+    return initialPopulation - aliensAndOffsets.size();
   }
 }
 
