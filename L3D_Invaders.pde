@@ -48,6 +48,10 @@ void setup() {
   swarm = new AlienSwarm(minim, 3, 2, max(3, cube.side/2), 30, cube.side);
   player = new Ship(minim, 4, 4, cube.side);
   shots = new Vector<Shot>();
+  
+  // set sensible almost-top-down camera angle
+  cube.xAngle = 6.2;
+  cube.yAngle = 4.5;
 }
 
 void layoutBases() {
