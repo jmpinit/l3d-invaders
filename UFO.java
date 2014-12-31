@@ -15,6 +15,8 @@ public class UFO {
   private boolean dir;
   private boolean alive;
   
+  private int deathAnimTimer;
+  
   private boolean announced;
   
   private int bound;
@@ -41,50 +43,70 @@ public class UFO {
       announced = true;
     }
     
-    for(Shot s: shots) {
-      if(s instanceof Ship.ShipShot) {
-        for(int z=0; z < 2; z++) {
-          for(int x=0; x < 2; x++) {
-            if((int)(pos.x+x) == s.getX() && (int)pos.y == s.getY() && (int)(pos.z+z) == s.getZ()) {
-              sfxDeath.rewind();
-              sfxDeath.play();
-              sfxUFO.pause();
-              alive = false;
-              s.kill();
+    if(alive) {
+      for(Shot s: shots) {
+        if(s instanceof Ship.ShipShot) {
+          for(int z=0; z < 2; z++) {
+            for(int x=0; x < 2; x++) {
+              if((int)(pos.x+x) == s.getX() && (int)pos.y == s.getY() && (int)(pos.z+z) == s.getZ()) {
+                sfxDeath.rewind();
+                sfxDeath.play();
+                sfxUFO.pause();
+                
+                deathAnimTimer = 16;
+                alive = false;
+                s.kill();
+              }
             }
           }
         }
       }
-    }
-    
-    if(time - lastMoveTime >= speed) {
-      if(dir == HORIZONTAL) {
-        pos.x += 1;
-      } else {
-        pos.z += 1;
+      
+      if(time - lastMoveTime >= speed) {
+        if(dir == HORIZONTAL) {
+          pos.x += 1;
+        } else {
+          pos.z += 1;
+        }
+        
+        lastMoveTime = time;
       }
       
       // die upon leaving the cube
       if(pos.x <= -2 || pos.y <= -2 || pos.x > bound || pos.y > bound) {
         alive = false;
       }
-      
-      lastMoveTime = time;
     }
   }
   
   public void render(L3D cube) {
     PVector offset = new PVector();
     
-    for(int z=0; z < 2; z++) {
-      for(int x=0; x < 2; x++) {
-        offset.set(pos.x+x, pos.y, pos.z+z);
-        cube.setVoxel(offset, COLOR);
+    if(alive) {
+      for(int z=0; z < 2; z++) {
+        for(int x=0; x < 2; x++) {
+          offset.set(pos.x+x, pos.y, pos.z+z);
+          cube.setVoxel(offset, COLOR);
+        }
       }
+    } else { 
+      for(int z=0; z < bound; z++) {
+        for(int x=0; x < bound; x++) {
+          offset.set(x, pos.y, z);
+          float d = (float)Math.sqrt(Math.pow(x-pos.x, 2) + Math.pow(z-pos.z, 2));
+          float phase = deathAnimTimer / 1.0f;
+          float v = (float)((1.0 + Math.sin(d+phase))/2.0);
+          float b = 1.0f;
+          
+          cube.setVoxel(offset, Color.HSBtoRGB(1.0f, v, b));
+        }
+      }
+      
+      deathAnimTimer--;
     }
   }
   
   public boolean isAlive() {
-    return alive;
+    return !(deathAnimTimer == 0 && !alive);
   }
 }
