@@ -144,8 +144,9 @@ void render() {
     
     if(!playing) {
       // display score
-      String score = "" + swarm.deadCount() + " ";
-      text.put(cube, score.charAt(time / FRAME_RATE % score.length()), cube.side-1);
+      int score = swarm.deadCount() + UFO.deadCount() * 5;
+      String scoreText = "" + score + " ";
+      text.put(cube, scoreText.charAt(time / FRAME_RATE % scoreText.length()), cube.side-1);
     }
   }
 }

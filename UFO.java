@@ -5,6 +5,7 @@ import ddf.minim.*;
 import java.awt.Color;
 
 public class UFO {
+  private static int deaths;
   public static final boolean HORIZONTAL = false;
   public static final boolean VERTICAL = true;
   
@@ -56,6 +57,8 @@ public class UFO {
                 deathAnimTimer = 16;
                 alive = false;
                 s.kill();
+                
+                UFO.deaths++;
               }
             }
           }
@@ -108,5 +111,9 @@ public class UFO {
   
   public boolean isAlive() {
     return !(deathAnimTimer == 0 && !alive);
+  }
+  
+  public static int deadCount() {
+    return UFO.deaths;
   }
 }
