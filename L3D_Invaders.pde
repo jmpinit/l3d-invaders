@@ -25,10 +25,10 @@ int time = 0;
 int endTime;
 
 void setup() {
-  size(800, 800, P3D);
+  size(displayWidth, displayHeight, P3D);
   frameRate(30);
   
-  cube=new L3D(this);
+  cube = new L3D(this, 16);
   cube.enableDrawing();  //draw the virtual cube
   cube.enableMulticastStreaming();  //stream the data over UDP to any L3D cubes that are listening on the local network
   cube.enablePoseCube();
@@ -39,27 +39,25 @@ void setup() {
   sfxWin = minim.loadFile("win.wav");
   
   layoutBases();
-  swarm = new AlienSwarm(minim, 3, 2, 3, 30);
-  player = new Ship(minim, 4, 4);
+  swarm = new AlienSwarm(minim, 3, 2, max(3, cube.side/2), 30, cube.side);
+  player = new Ship(minim, 4, 4, cube.side);
   shots = new Vector<Shot>();
 }
 
 void layoutBases() {
   int baseWidth = 2;
-  int baseHeight = 2;
+  int baseDepth = 2;
   
   int margin = 1;
-  int gridWidth = 3;
-  int gridHeight = 3;
   int gridSpacing = 2;
   
   int originSpacing = baseWidth + gridSpacing;
   
-  bases = new ArrayList<Base>(gridWidth * gridHeight);
+  bases = new ArrayList<Base>();
   
-  for(int z=0; z < gridHeight; z++) {
-    for(int x=0; x < gridWidth; x++) {
-      bases.add(new Base(margin + x * originSpacing, margin + z * originSpacing, baseWidth, baseHeight));
+  for(int z=0; z < cube.side + baseDepth; z += originSpacing) {
+    for(int x=0; x < cube.side + baseWidth; x += originSpacing) {
+      bases.add(new Base(margin + x, margin + z, baseWidth, baseDepth));
     }
   }
 }
@@ -106,21 +104,21 @@ void render() {
     int timeSinceEnd = int(animSpeed * (time - endTime));
     
     if(!winner) {
-      int pos = 7 - min(7, timeSinceEnd);
+      int pos = (cube.side-1) - min(cube.side-1, timeSinceEnd);
       
-      for(int y=7; y >= pos; y--) {
-        for(int z=0; z < 8; z++) {
-          for(int x=0; x < 8; x++) {
+      for(int y=cube.side-1; y >= pos; y--) {
+        for(int z=0; z < cube.side; z++) {
+          for(int x=0; x < cube.side; x++) {
             cube.setVoxel(new PVector(x, y, z), color(255, 0, 0));
           }
         }
       }
     } else {
-      int pos = int(min(8, timeSinceEnd));
+      int h = int(min(cube.side, timeSinceEnd));
       
-      for(int y=0; y < pos; y++) {
-        for(int z=0; z < 8; z++) {
-          for(int x=0; x < 8; x++) {
+      for(int y=0; y < h; y++) {
+        for(int z=0; z < cube.side; z++) {
+          for(int x=0; x < cube.side; x++) {
             cube.setVoxel(new PVector(x, y, z), color(0, 255, 0));
           }
         }

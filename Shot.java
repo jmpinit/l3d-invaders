@@ -6,13 +6,17 @@ public abstract class Shot {
   private int vy;
   private boolean alive;
   
-  private final static int SPEED = 1;
+  private int yBound;
+  
+  private final static int SPEED = 2;
   protected int myColor;
   private int lastMoveTime;
   
-  public Shot(int x, int y, int z, int _vy) {
+  public Shot(int x, int y, int z, int _vy, int bound) {
     pos = new PVector(x, y, z);
     vy = _vy;
+    yBound = bound;
+    
     lastMoveTime = 0;
     alive = true;
   }
@@ -21,7 +25,7 @@ public abstract class Shot {
     if(time - lastMoveTime > SPEED) {
       pos.y += vy;
       
-      if(pos.y < 0 || pos.y > 7)
+      if(pos.y < 0 || pos.y > yBound - 1)
         alive = false;
       
       lastMoveTime = time;

@@ -11,12 +11,16 @@ public class Ship {
   private boolean shoot;
   private boolean alive;
   
+  private int bound;
+  
   private Shot myShot;
   
   private AudioPlayer sfxShoot;
   
-  public Ship(Minim minim, int x, int z) {
+  public Ship(Minim minim, int x, int z, int _bound) {
     pos = new PVector(x, 0, z);
+    
+    bound = _bound;
     
     alive = true;
     shoot = false;
@@ -35,7 +39,7 @@ public class Ship {
     }
     
     if(shoot && myShot == null) {
-      myShot = new ShipShot((int)pos.x, (int)(pos.y+1), (int)pos.z);
+      myShot = new ShipShot((int)pos.x, (int)(pos.y+1), (int)pos.z, bound);
       shots.add(myShot);
       sfxShoot.rewind();
       sfxShoot.play();
@@ -61,12 +65,12 @@ public class Ship {
   
   public void moveRight() {
     if(!alive) return;
-    if(pos.x < 7) pos.x++;
+    if(pos.x < bound-1) pos.x++;
   }
   
   public void moveBack() {
     if(!alive) return;
-    if(pos.z < 7) pos.z++;
+    if(pos.z < bound-1) pos.z++;
   }
   
   public void moveForward() {
@@ -80,8 +84,8 @@ public class Ship {
   }
    
   class ShipShot extends Shot {
-    public ShipShot(int x, int y, int z) {
-      super(x, y, z, 1);
+    public ShipShot(int x, int y, int z, int bound) {
+      super(x, y, z, 1, bound);
       myColor = (new Color(255, 255, 0)).getRGB();
     }
   }

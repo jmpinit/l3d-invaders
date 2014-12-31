@@ -7,10 +7,12 @@ import ddf.minim.*;
 public class AlienSwarm {
   private List<Pair<Alien, PVector>> aliensAndOffsets;
   private int spacing, margin, sizeDeadzone;
+  private final static float SHOOT_LIKELIHOOD = 0.03f;
   
   PVector pos;
   int xDir, yDir, zDir;
   private int w, h, depth;
+  private int bound;
   
   private int initialSpeed;
   private int lastMoveTime;
@@ -19,9 +21,10 @@ public class AlienSwarm {
   private AudioPlayer music[];
   private int musicIndex = 0;
   
-  public AlienSwarm(Minim _minim, int _spacing, int margin, int sizeDeadzone, int speed) {
+  public AlienSwarm(Minim _minim, int _spacing, int margin, int sizeDeadzone, int speed, int _bound) {
     spacing = _spacing;
     initialSpeed = speed;
+    bound = _bound;
     
     minim = _minim;
     
@@ -32,16 +35,22 @@ public class AlienSwarm {
     music[3] = minim.loadFile("music-4.mp3");
     musicIndex = 0;
     
-    w = (int)(Math.ceil((8-margin) / spacing) - 1) * spacing + 1;
+    w = (int)(Math.ceil((bound-margin) / spacing) - 1) * spacing + 1;
     depth = w;
-    h = 7 - sizeDeadzone;
+    h = bound - sizeDeadzone;
     
-    pos = new PVector(margin, 0, margin);
+    pos = new PVector(margin, bound - 1, margin);
    
     xDir = 1; yDir = -1; zDir = 1;
     
     aliensAndOffsets = new ArrayList<Pair<Alien, PVector>>();
     layoutAliens();
+    
+    float shootLikelihood = SHOOT_LIKELIHOOD * 1.0f / aliensAndOffsets.size();
+    for(Pair p: aliensAndOffsets) {
+      Alien a = (Alien)p.x;
+      a.setShootLikelihood(shootLikelihood);
+    }
   }
   
   public void layoutAliens() {
@@ -50,11 +59,11 @@ public class AlienSwarm {
     
     int i = 0;
     for(int z=0; z < depth; z += alienXZSpacing) {
-      for(int y=0; y < h; y += alienYSpacing) {
+      for(int y=0; y > -h; y -= alienYSpacing) {
         for(int x=0; x < w; x += alienXZSpacing) {
           if(aliensAndOffsets.size() - 1 < i) {
-            Alien a = new Alien(minim, x + (int)pos.x, (7-y) + (int)pos.y, z + (int)pos.z);
-            PVector offset = new PVector(x, (7-y), z);
+            Alien a = new Alien(minim, x + (int)pos.x, y + (int)pos.y, z + (int)pos.z, bound);
+            PVector offset = new PVector(x, y, z);
             aliensAndOffsets.add(new Pair<Alien, PVector>(a, offset));
           } else {
             Pair p = aliensAndOffsets.get(i);
@@ -89,7 +98,7 @@ public class AlienSwarm {
   }
   
   public void update(int time, List<Shot> shots) {
-    int speed = (int)(initialSpeed - PApplet.map(pos.y, 0, 7, 0, initialSpeed));
+    int speed = (int)PApplet.map(pos.y, 0, bound-1, 0, initialSpeed);
     
     if(time - lastMoveTime >= speed) {
       boolean xCollide = false;
@@ -97,8 +106,8 @@ public class AlienSwarm {
       
       pos.x += xDir;
       
-      if(pos.x + w > 8) {
-        pos.x = 8 - w;
+      if(pos.x + w > bound) {
+        pos.x = bound - w;
         xCollide = true;
       }
       
@@ -112,8 +121,8 @@ public class AlienSwarm {
         
         pos.z += zDir;
         
-        if(pos.z + depth > 8) {
-          pos.z = 8 - depth;
+        if(pos.z + depth > bound) {
+          pos.z = bound - depth;
           zCollide = true;
         }
         
@@ -154,7 +163,7 @@ public class AlienSwarm {
   }
   
   public boolean reachedGoal() {
-    return pos.y + h > 7;
+    return pos.y < h;
   }
   
   public boolean isAlive() {
@@ -163,7 +172,7 @@ public class AlienSwarm {
 }
 
 class Alien {
-  private static final float SHOOT_LIKELIHOOD = 0.005f;
+  private float shootLikelihood;
   
   private int myColor;
   private Shot myShot;
@@ -175,14 +184,15 @@ class Alien {
   private AudioPlayer sfxDie;
   
   private Random rand;
+  private int bound;
   
-  public Alien(Minim minim, int _x, int _y, int _z) {
-    this(minim, _x, _y, _z, 30);
+  public Alien(Minim minim, int _x, int _y, int _z, int _bound) {
+    this(minim, _x, _y, _z, 30, _bound);
   }
   
-  public Alien(Minim minim, int _x, int _y, int _z, int _speed) {
+  public Alien(Minim minim, int _x, int _y, int _z, int _speed, int _bound) {
     pos = new PVector(_x, _y, _z);
-    alive = true;
+    bound = _bound;
     
     rand = new Random();
     
@@ -190,6 +200,7 @@ class Alien {
     sfxDie = minim.loadFile("alien-death.wav");
     
     myColor = (new Color(255, 255, 255)).getRGB();
+    alive = true;
   }
   
   public void setPosition(int x, int y, int z) {
@@ -211,7 +222,7 @@ class Alien {
     }
     
     if(alive) {
-      if(rand.nextFloat() < SHOOT_LIKELIHOOD && myShot == null) {
+      if(rand.nextFloat() < shootLikelihood && myShot == null) {
         myShot = new AlienShot((int)pos.x, (int)(pos.y-1), (int)pos.z);
         shots.add(myShot);
         sfxShoot.rewind();
@@ -221,6 +232,14 @@ class Alien {
     
     if(myShot != null && !myShot.isAlive())
       myShot = null;
+  }
+  
+  public void setShootLikelihood(float likelihood) {
+    if(likelihood >= 0 && likelihood <= 1.0) {
+      shootLikelihood = likelihood;
+    } else {
+      throw new RuntimeException("Shoot likelihood must be between 0 and 1: " + likelihood);
+    }
   }
   
   public void render(L3D cube) {
@@ -233,7 +252,7 @@ class Alien {
   
   class AlienShot extends Shot {
     public AlienShot(int x, int y, int z) {
-      super(x, y, z, -1);
+      super(x, y, z, -1, bound);
       myColor = (new Color(255, 0, 0)).getRGB();
     }
   }
