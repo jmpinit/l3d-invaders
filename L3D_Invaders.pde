@@ -25,7 +25,7 @@ int time = 0;
 int endTime;
 
 void setup() {
-  size(640, 480, P3D);
+  size(800, 800, P3D);
   frameRate(30);
   
   cube=new L3D(this);
@@ -48,17 +48,18 @@ void layoutBases() {
   int baseWidth = 2;
   int baseHeight = 2;
   
-  int baseGridWidth = 3;
-  int baseGridHeight = 3;
-  int baseGridSpacing = 1;
+  int margin = 1;
+  int gridWidth = 3;
+  int gridHeight = 3;
+  int gridSpacing = 2;
   
-  int originSpacing = baseWidth + baseGridSpacing;
+  int originSpacing = baseWidth + gridSpacing;
   
-  bases = new ArrayList<Base>(baseGridWidth * baseGridHeight);
+  bases = new ArrayList<Base>(gridWidth * gridHeight);
   
-  for(int y=0; y < baseGridHeight; y++) {
-    for(int x=0; x < baseGridWidth; x++) {
-      bases.add(new Base(x * originSpacing, y * originSpacing, baseWidth, baseHeight));
+  for(int z=0; z < gridHeight; z++) {
+    for(int x=0; x < gridWidth; x++) {
+      bases.add(new Base(margin + x * originSpacing, margin + z * originSpacing, baseWidth, baseHeight));
     }
   }
 }
@@ -82,6 +83,7 @@ void update() {
     if(!player.isAlive()) {
       lose();
     } else if(swarm.reachedGoal()) {
+      println("aliens reached their goal");
       lose();
     } else if(!swarm.isAlive()) {
       win();
