@@ -6,6 +6,7 @@ import ddf.minim.*;
 // by Owen Trueblood
 
 final int FRAME_RATE = 30;
+final float UFO_LIKELIHOOD = 0.005f;
 
 L3D cube;
 
@@ -48,7 +49,6 @@ void setup() {
   layoutBases();
   swarm = new AlienSwarm(minim, 3, 2, max(3, cube.side/2), 30, cube.side);
   player = new Ship(minim, 4, 4, cube.side);
-  ufo = new UFO(minim, 0, 3, UFO.HORIZONTAL, cube.side);
   shots = new Vector<Shot>();
   
   // set sensible almost-top-down camera angle
@@ -76,6 +76,14 @@ void layoutBases() {
 
 void update() {
   if(playing) {
+    if(random(1.0f) < UFO_LIKELIHOOD && ufo == null) {
+      if(random(1.0f) > 0.5) {
+        ufo = new UFO(minim, 0, int(random(0, cube.side-1)), UFO.HORIZONTAL, cube.side);
+      } else {
+        ufo = new UFO(minim, int(random(0, cube.side-1)), 0, UFO.VERTICAL, cube.side);
+      }
+    }
+    
     for(Shot s: shots) s.update(time);
     player.update(time, shots);
     swarm.update(time, shots);
