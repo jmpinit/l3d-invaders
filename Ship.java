@@ -5,7 +5,7 @@ import ddf.minim.*;
 import java.awt.Color;
 
 public class Ship {
-  private final static int MAX_LIVES = 3;
+  private final static int MAX_LIVES = 2;
   
   private PVector pos;
   private boolean shoot;
