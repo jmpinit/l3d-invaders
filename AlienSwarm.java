@@ -250,7 +250,12 @@ class Alien {
   }
   
   public void render(L3D cube) {
+    // body
     cube.setVoxel(pos, myColor);
+    
+    // ground highlight
+    PVector highlightPos = new PVector(pos.x, 0, pos.z);
+    cube.setVoxel(highlightPos, (new Color(128, 64, 0)).getRGB());
   }
   
   public boolean isAlive() {
