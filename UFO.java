@@ -73,7 +73,7 @@ public class UFO {
       }
       
       // die upon leaving the cube
-      if(pos.x <= -2 || pos.y <= -2 || pos.x > bound || pos.y > bound) {
+      if(pos.x <= -2 || pos.z <= -2 || pos.x > bound || pos.z > bound) {
         alive = false;
       }
     }
