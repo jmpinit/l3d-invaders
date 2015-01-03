@@ -14,15 +14,15 @@ public class Ship {
   
   private int bound;
   
-  private Shot myShot;
+  private Shot[] myShots;
   
   private AudioPlayer sfxShoot;
   private AudioPlayer sfxHurt;
   private boolean flash;
   
-  public Ship(Minim minim, int x, int z, int _bound) {
+  public Ship(Minim minim, int x, int z, int shotCount, int _bound) {
     pos = new PVector(x, 0, z);
-    
+    myShots = new Shot[shotCount];
     bound = _bound;
     
     alive = true;
@@ -50,16 +50,21 @@ public class Ship {
       }
     }
     
-    if(shoot && myShot == null) {
-      myShot = new ShipShot((int)pos.x, (int)(pos.y+1), (int)pos.z, bound);
-      shots.add(myShot);
-      sfxShoot.rewind();
-      sfxShoot.play();
-      shoot = false;
+    for(int i=0; i < myShots.length; i++) {
+      Shot myShot = myShots[i];
+      
+      if(shoot && myShot == null) {
+        myShot = new ShipShot((int)pos.x, (int)(pos.y+1), (int)pos.z, bound);
+        myShots[i] = myShot;
+        shots.add(myShot);
+        sfxShoot.rewind();
+        sfxShoot.play();
+        shoot = false;
+      }
+      
+      if(myShot != null && !myShot.isAlive())
+        myShots[i] = null;
     }
-    
-    if(myShot != null && !myShot.isAlive())
-      myShot = null;
   }
   
   public void render(L3D cube) {
