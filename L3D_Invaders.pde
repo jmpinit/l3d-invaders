@@ -213,7 +213,7 @@ void keyPressed() {
         case 's':
           player.moveBack();
           break;
-        case 'z':
+        case 'd':
           player.moveRight();
           break;
         case ' ':
